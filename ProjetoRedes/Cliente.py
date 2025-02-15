@@ -14,7 +14,7 @@ class Cliente:
     def escutarServidores(self):
         print("Esperando servidores...")
         HOST = ''              # Endereco IP do Servidor
-        PORT = 5005            # Porta que o Servidor esta
+        PORT = 5005            # Porta que o Servidor esta Porta 5005 para receber mensagens de broadcast.
         udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         orig = (HOST, PORT)
         udp.bind(orig)

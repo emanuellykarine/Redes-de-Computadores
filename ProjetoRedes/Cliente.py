@@ -2,8 +2,6 @@ import socket
 from threading import Thread
 import time
 
-
-
 class Cliente:
     servidores = {}
 

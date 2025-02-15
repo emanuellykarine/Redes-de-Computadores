@@ -47,7 +47,6 @@ class IPNetwork:
         except ValueError:
             return False
 
-
 class Sistema:
     def __init__(self) -> None:
         pass
@@ -56,24 +55,19 @@ class Sistema:
             case "/help":
                 return "Ajuda Requisitada: \n\t /memFree mostra a quantidade de memória RAM disponível\n\t /off para desligar\n\t /hdFree mostra o espaço livre do HD\n\t /CPU mostra o número total de CPUs\n\t /Media Calcula a média simples dos dados coletados\n\t /detalhes lista e detalha um computador a escolha"
             case "/hdFree":
-                resposta = psutil.virtual_memory()
-                return str(resposta)
+                resposta = psutil.disk_usage('/').free/(1024**3) # resposta em GB
+                return str("Espaço livre no HD:" + resposta + "GB")
+            case "/hdFree":
+                resposta = psutil.cpu_count(logical=True)
+                return str("Quantidade de CPUs:" + resposta)
             case "/memFree":
-                resposta = psutil.virtual_memory().available # mem livre para novos processos
-                return str(resposta)
-            case "/google":
-                chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-                url = "https://laica.ifrn.edu.br/"
-                webbrowser.register('chrome', None, webbrowser.BackgroundBrowser(chrome_path))
-                webbrowser.get('chrome').open_new_tab(url)
-                return "Abrindo Navegador"
-            case "/ip":
-                _, ip1, ip2, mask = cmd.split()
-                mask_bits = mask.strip("/")  # Retirar a barra da máscara
-                try:
-                    ip_network = IPNetwork(ip1, ip2, mask_bits)
-                    return ip_network.check_same_network()
-                except ValueError as e:
-                    return str(e)
+                resposta = psutil.virtual_memory().available/(1024**3) # mem livre para novos processos em GB
+                return str("Memória RAM Livre:" + resposta + "GB")
+            case "/Media":
+                dados = [psutil.cpu_count(logical=True), (psutil.virtual_memory().available/(1024**3)), (psutil.disk_usage('/').free/(1024**3))] # [n_processadores, ram_disponivel_em_bytes, espaco_em_disco_livre_em_bytes] lista com os dados coletados
+                resposta = sum(dados)/len(dados) # media
+                return str(f"Média dos dados coletados(Qtd CPU, espaço livre na mem RAM, espaço livre no HD):{resposta:.2f}")
+            case "/detalhes":
+                return str("Que computador mds...")
             case _:
                 return "Opção Inválida"

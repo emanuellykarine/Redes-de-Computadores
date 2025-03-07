@@ -9,22 +9,18 @@ class Cliente:
         self.server_port = 5551
 
     def descobrir_server(self) -> None:
-        # envia um broadcast para encontrar um servidor na rede
-        udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        udp_socket.settimeout(3)  # Timeout de 3 segundos para resposta
-        try:
-            udp_socket.sendto(b"DISCOVERY", ("255.255.255.255", 5552))  # Broadcast na rede
-            msg, server_addr = udp_socket.recvfrom(1024)  # Aguarda resposta
-            if msg.decode("utf-8") == "SERVER":
-                print(f"Servidor encontrado em {server_addr[0]}")
-                return server_addr[0]
-        except socket.timeout:
-            print("Nenhum servidor encontrado.")
-            exit(1)
-        finally:
-            udp_socket.close()
-            
+        """Busca uma conexao com um servidor"""
+        print("Esperando servidores...")
+        HOST = ''              # Endereco IP do Servidor
+        PORT = 5005            # Porta que o Servidor esta
+        udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+        orig = (HOST, PORT)
+        udp.bind(orig)
+        while True:
+            msg, cliente = udp.recvfrom(1024)
+            tupla = eval(msg.decode("utf-8")) # A mensagem recebida vem como uma tupla com ip e porta
+
+            return cliente[0], int(tupla[1]) # Retorna o ip e a porta
     def enviar_info(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

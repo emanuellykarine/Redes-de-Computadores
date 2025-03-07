@@ -1,30 +1,28 @@
-import socket # cria a conexão
+import socket  # Cria a conexão
 import time
 import json
-from Sistema import Sistema
+import ast  # Importando para segurança na avaliação de tupla
+from Sistema import Sistema  # Certifique-se de que Sistema está implementado corretamente
 
 class Cliente:
     def __init__(self) -> None:
-        self.server_ip = self.descobrir_servidor()
-        self.server_port = 5551
+        self.server_ip, self.server_port = self.descobrir_servidor()
 
-    def descobrir_server(self) -> None:
-        # envia um broadcast para encontrar um servidor na rede
-        udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        udp_socket.settimeout(3)  # Timeout de 3 segundos para resposta
-        try:
-            udp_socket.sendto(b"DISCOVERY", ("255.255.255.255", 5552))  # Broadcast na rede
-            msg, server_addr = udp_socket.recvfrom(1024)  # Aguarda resposta
-            if msg.decode("utf-8") == "SERVER":
-                print(f"Servidor encontrado em {server_addr[0]}")
-                return server_addr[0]
-        except socket.timeout:
-            print("Nenhum servidor encontrado.")
-            exit(1)
-        finally:
-            udp_socket.close()
-            
+    def descobrir_servidor(self) -> tuple:
+        """Busca uma conexão com um servidor"""
+        print("Esperando servidores...")
+        HOST = ''              # Endereço IP do Servidor
+        PORT = 5005            # Porta que o Servidor está
+        udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+        orig = (HOST, PORT)
+        udp.bind(orig)
+
+        while True:
+            msg, cliente = udp.recvfrom(1024)
+            tupla = ast.literal_eval(msg.decode("utf-8"))  # Usando ast.literal_eval
+
+            return cliente[0], int(tupla[1])  # Retorna o ip e a porta como tupla (str, int)
+
     def enviar_info(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,23 +35,22 @@ class Cliente:
                 "espaco_memoria": Sistema.espaco_memoria()
             }
 
-            # Enviar JSON para o servidor
-            s.send(json.dumps(dados).encode("utf-8"))
+            # Serializar o dicionário para JSON e depois para bytes
+            dados_json = json.dumps(dados)  # Converte o dicionário para uma string JSON
+            s.send(dados_json.encode("utf-8"))  # Converte a string JSON para bytes e envia ao servidor
             print("Informações enviadas ao servidor.")
 
-            s.close()
+            s.close()  # Fechar a conexão depois de enviar os dados
         except Exception as e:
             print(f"Erro ao conectar ao servidor: {e}")
-      
-
+            
 
 def main():
     cliente = Cliente()
     while True:
-        cliente.solicitar_info()
-        time.sleep(10)
-        cliente.fechar_conexao()
+        cliente.enviar_info()  # Enviar informações para o servidor
+        time.sleep(10)  # Aguardar 10 segundos antes de enviar novamente
+
 
 if __name__ == "__main__":
     main()
-
